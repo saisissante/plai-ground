@@ -11,13 +11,17 @@
   "dependencies": {
     "next": "16.0.7",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "zustand": "^4.4.7",
+    "axios": "^1.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.7",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
   }
 }

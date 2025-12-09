@@ -1,26 +1,200 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Alice&family=Inter:wght@300;400;500;600;700&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #ffeef8 0%, #e0f4ff 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Alice', serif;
+}
+
+.wonderland-font {
+  font-family: 'Alice', serif;
+}
+
+.container-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Smooth animations */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c3b1e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b39ddb;
+}
+
+/* TutorialIntro.jsx에 필요한 추가 CSS 스타일 */
+/* 이 내용을 globals.css에 추가하세요 */
+
+/* 커서 깜빡임 */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 0.8s infinite;
+}
+
+/* 느린 펄스 */
+@keyframes pulse-slow {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    opacity: 0.85; 
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* 플로팅 애니메이션 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 파티클 떨어지는 효과 */
+@keyframes float-down {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-down {
+  animation: float-down 10s linear infinite;
+}
+
+/* 레이디얼 그라디언트 (비네트 효과) */
+.bg-gradient-radial {
+  background: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-to));
+}
+
+/* TutorialIntro.jsx에 필요한 추가 CSS 스타일 */
+/* 이 내용을 globals.css에 추가하세요 */
+
+/* 커서 깜빡임 */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 0.8s infinite;
+}
+
+/* 느린 펄스 */
+@keyframes pulse-slow {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    opacity: 0.85; 
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* 플로팅 애니메이션 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 파티클 떨어지는 효과 */
+@keyframes float-down {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-down {
+  animation: float-down 10s linear infinite;
+}
+
+/* 레이디얼 그라디언트 (비네트 효과) */
+.bg-gradient-radial {
+  background: radial-gradient(circle at center, var(--tw-gradient-from), var(--tw-gradient-to));
 }
