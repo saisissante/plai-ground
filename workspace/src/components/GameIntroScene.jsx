@@ -230,7 +230,7 @@ export default function GameIntroScene({ onStart }) {
                   e.target.style.boxShadow = '0 5px 30px rgba(201,162,39,0.5)'
                 }}
               >
-                ✦ 여정을 시작하다 ✦
+                ✦ 여정을 시작한다 ✦
               </button>
 
               <p style={{

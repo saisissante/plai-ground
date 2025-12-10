@@ -33,7 +33,7 @@ const DEFAULT_PIECES = [
 ]
 
 // 기본 앨리스 위치
-const DEFAULT_ALICE = { x: 7, y: 4 }
+const DEFAULT_ALICE = { x: 7, y: 7 }
 
 /* ───────────────────────────────
     3D Scene Component

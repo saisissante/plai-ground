@@ -4,80 +4,127 @@ export async function POST(request) {
   try {
     const { gameHistory, drinkChoice } = await request.json()
 
-    // API 키 확인
+    // 기본 검사
+    if (!gameHistory || gameHistory.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "엔딩 생성 실패: 히스토리가 없습니다." },
+        { status: 400 }
+      )
+    }
+
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: 'OpenAI API key not configured' },
+        { success: false, error: "OpenAI API key not configured" },
         { status: 500 }
       )
     }
 
-    // 플레이어의 선택들에서 trait 추출
-    const traits = gameHistory?.map(h => h.trait).filter(Boolean) || []
-    const traitSummary = traits.reduce((acc, trait) => {
-      acc[trait] = (acc[trait] || 0) + 1
-      return acc
-    }, {})
+    // ----------------------------------------------------
+    // 1) 기존 trait 계산(유지)
+    // ----------------------------------------------------
+    const traitScores = { open: 0, cautious: 0, avoid: 0 }
 
-    const systemPrompt = `너는 "이상한 나라의 앨리스" 세계관의 엔딩 작성자야.
+    gameHistory.forEach(entry => {
+      if (!entry.trait) return
+      const parts = entry.trait.split('|')
+      parts.forEach(t => {
+        if (t.includes("open")) traitScores.open++
+        if (t.includes("cautious")) traitScores.cautious++
+        if (t.includes("avoid")) traitScores.avoid++
+      })
+    })
+
+    // traitSummary 형태로 변환하여 AI에 전달
+    const traitSummary = {
+      open: traitScores.open,
+      cautious: traitScores.cautious,
+      avoid: traitScores.avoid
+    }
+
+    // ----------------------------------------------------
+    // 2) 엔딩 생성용 LLM 프롬프트
+    // ----------------------------------------------------
+    const systemPrompt = `
+너는 "이상한 나라의 앨리스" 세계관의 엔딩 작성자야.
 플레이어의 여정을 분석하고 개인화된 엔딩을 작성해.
 
-플레이어 정보:
-- 첫 선택(물약): ${drinkChoice === 'yes' ? '마셨다' : '안 마셨다'}
+🎮 플레이어 정보
+- 첫 선택(물약): ${drinkChoice === "yes" ? "마셨다" : "안 마셨다"}
 - 선택 기록: ${JSON.stringify(gameHistory, null, 2)}
 - 성향 요약: ${JSON.stringify(traitSummary, null, 2)}
 
-규칙:
-1. 플레이어의 선택 패턴을 분석해서 성격 유형을 정의해
-2. 엔딩은 감동적이고 개인적인 메시지를 담아야 해
-3. 이상한 나라에서의 여정이 현실에서 어떤 의미를 갖는지 연결해
-4. 한국어로 작성해
-5. ⚠️ endingText는 반드시 공백 포함 200자 이내, 3줄 이내로 짧고 임팩트있게 작성해
+🎯 규칙
+1. 플레이어의 선택 패턴을 분석해 성격 유형을 정의한다.
+2. 엔딩 제목은 상징적이어야 한다.
+3. 엔딩 텍스트는 현실과 연결되는 짧고 여운 있는 3줄 이하 문장으로, 공백 포함 200자 이내.
+4. message는 플레이어에게 주는 1문장 조언.
+5. traits 배열에는 플레이어의 성향을 3줄로 요약한다.
 
-응답 형식 (JSON):
+응답 형식(JSON):
 {
-  "playerType": "플레이어 성격 유형 (예: 용감한 몽상가, 신중한 현실주의자 등)",
-  "playerTypeEmoji": "성격을 나타내는 이모지",
+  "playerType": "플레이어 성격 유형",
+  "playerTypeEmoji": "이모지",
   "endingTitle": "엔딩 제목",
-  "endingText": "엔딩 스토리 텍스트 (공백 포함 150자 이내, 3줄 이내)",
-  "message": "플레이어에게 전하는 개인적 메시지 (1문장)",
-  "traits": ["주요 성향1", "주요 성향2", "주요 성향3"]
-}`
+  "endingText": "3줄 이내, 공백 포함 200자 이하",
+  "message": "플레이어에게 남기는 1문장",
+  "traits": ["성향1", "성향2", "성향3"]
+}
+`
 
-    // OpenAI API 호출
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    // ----------------------------------------------------
+    // 3) LLM 호출
+    // ----------------------------------------------------
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: '플레이어의 여정을 분석하고 엔딩을 생성해줘.' }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: "플레이어의 여정을 분석하고 엔딩을 생성해줘." }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.9,
-      }),
+        response_format: { type: "json_object" },
+        temperature: 0.9
+      })
     })
 
+    // LLM 실패했을 때 fallback 엔딩 제공
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error?.message || 'OpenAI API error')
+      console.error("LLM 엔딩 생성 실패. Fallback 엔딩으로 대체합니다.")
+      return NextResponse.json({
+        success: true,
+        data: {
+          endingTitle: "낯선 길의 끝에서",
+          playerType: "방랑자",
+          playerTypeEmoji: "✨",
+          traits: [
+            `개방성: ${traitScores.open}`,
+            `신중함: ${traitScores.cautious}`,
+            `회피성: ${traitScores.avoid}`
+          ],
+          endingText: "이상한 나라에서의 여정은 끝났지만,\n당신의 선택은 현실에서 새로운 의미를 찾기 시작합니다.",
+          message: "당신이 걸어온 길은 언제나 스스로가 선택한 길입니다."
+        }
+      })
     }
 
     const data = await response.json()
     const endingData = JSON.parse(data.choices[0].message.content)
-    
+
+    // ----------------------------------------------------
+    // 4) 최종 응답(EndingScreen.jsx 요구 형태 그대로)
+    // ----------------------------------------------------
     return NextResponse.json({
       success: true,
       data: endingData
     })
 
   } catch (error) {
-    console.error('Ending generation error:', error)
+    console.error("Ending generation error:", error)
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
