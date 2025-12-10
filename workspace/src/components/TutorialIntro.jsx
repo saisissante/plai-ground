@@ -65,16 +65,16 @@ export default function TutorialIntro({ onComplete }) {
       
       await Promise.all(imagePromises)
       setImagesLoaded(true)
+      // 이미지 로드 완료 후 페이드 인 시작
+      setTimeout(() => setFadeIn(true), 300)
     }
     
     preloadImages()
   }, [])
 
-  // 클라이언트 마운트 체크 및 페이드 인
+  // 클라이언트 마운트 체크
   useEffect(() => {
     setMounted(true)
-    // 메인 페이지 페이드 아웃 완료 후 페이드 인 시작
-    setTimeout(() => setFadeIn(true), 300)
   }, [])
 
   const [timeLeft, setTimeLeft] = useState(7)
