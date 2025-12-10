@@ -49,6 +49,26 @@ export default function TutorialIntro({ onComplete }) {
   const [mounted, setMounted] = useState(false)
   const [showGameIntro, setShowGameIntro] = useState(false) // 3D 인트로 씬 표시 여부
   const typingRef = useRef(false) // 타이핑 중복 방지
+  const [imagesLoaded, setImagesLoaded] = useState(false) // 이미지 로드 상태
+
+  // 이미지 프리로드
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = scenes.map(scene => {
+        return new Promise((resolve) => {
+          const img = new Image()
+          img.src = scene.image
+          img.onload = resolve
+          img.onerror = resolve // 에러가 나도 계속 진행
+        })
+      })
+      
+      await Promise.all(imagePromises)
+      setImagesLoaded(true)
+    }
+    
+    preloadImages()
+  }, [])
 
   // 클라이언트 마운트 체크 및 페이드 인
   useEffect(() => {
@@ -661,10 +681,11 @@ export default function TutorialIntro({ onComplete }) {
             boxShadow: 'inset 0 0 30px rgba(0,0,0,0.9)',
           }}>
             {/* 이미지 */}
-            {scene && (
+            {scene && imagesLoaded && (
             <img 
               src={scene.image}
               alt={`Scene ${scene.id}`}
+              loading="eager"
               style={{
                 width: '100%',
                 height: '100%',
