@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import GameBoard from '@/components/GameBoard'
 
+// UI만 담당하는 컴포넌트 (GameBoard는 부모에서 렌더링)
 export default function GameIntroScene({ onStart }) {
   const [mounted, setMounted] = useState(false)
   const [showText, setShowText] = useState(false)
   const [textPhase, setTextPhase] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const typingRef = useRef(false) // 타이핑 중복 방지
+  const typingRef = useRef(false)
 
   const introTexts = [
     "당신은 이상한 나라에 떨어졌습니다.",
@@ -22,14 +22,14 @@ export default function GameIntroScene({ onStart }) {
     setMounted(true)
     const timer = setTimeout(() => {
       setShowText(true)
-    }, 1000)
+    }, 500) // 보드가 이미 준비되어 있으므로 빠르게 시작
     return () => clearTimeout(timer)
   }, [])
 
   // 타이핑 효과
   useEffect(() => {
     if (!showText || textPhase >= introTexts.length) return
-    if (typingRef.current) return // 이미 타이핑 중이면 무시
+    if (typingRef.current) return
     
     typingRef.current = true
     const currentText = introTexts[textPhase]
@@ -63,28 +63,7 @@ export default function GameIntroScene({ onStart }) {
   if (!mounted) return null
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: '#0a0510',
-      zIndex: 9999,
-      overflow: 'hidden',
-    }}>
-      {/* 기존 GameBoard 컴포넌트 배경으로 사용 */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '100%',
-        height: '100%',
-        maxWidth: '900px',
-        maxHeight: '700px',
-        opacity: 0.85,
-      }}>
-        <GameBoard />
-      </div>
-
+    <>
       {/* 그라데이션 오버레이 */}
       <div style={{
         position: 'absolute',
@@ -308,6 +287,6 @@ export default function GameIntroScene({ onStart }) {
           }
         }
       `}</style>
-    </div>
+    </>
   )
 }

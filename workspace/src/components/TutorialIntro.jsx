@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import GameIntroScene from '@/components/GameIntroScene'
+import GameBoard from '@/components/GameBoard'
 
 const scenes = [
   {
@@ -40,17 +41,17 @@ export default function TutorialIntro({ onComplete }) {
   const [currentScene, setCurrentScene] = useState(0)
   const [showText, setShowText] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
-  const [fadeIn, setFadeIn] = useState(false) // 페이드 인 효과
+  const [fadeIn, setFadeIn] = useState(false)
   const [showNameInput, setShowNameInput] = useState(false)
   const [playerName, setPlayerName] = useState('')
   const [nameSubmitted, setNameSubmitted] = useState(false)
   const [textTyped, setTextTyped] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [showGameIntro, setShowGameIntro] = useState(false) // 3D 인트로 씬 표시 여부
-  const typingRef = useRef(false) // 타이핑 중복 방지
-  const [imagesLoaded, setImagesLoaded] = useState(false) // 이미지 로드 상태
-  const [loadingText, setLoadingText] = useState('창가에 다가가는 중') // 로딩 텍스트
+  const [showGameIntro, setShowGameIntro] = useState(false)
+  const typingRef = useRef(false)
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [loadingText, setLoadingText] = useState('창가에 다가가는 중')
 
   // 이미지 프리로드
   useEffect(() => {
@@ -73,14 +74,13 @@ export default function TutorialIntro({ onComplete }) {
           const img = new Image()
           img.src = scene.image
           img.onload = resolve
-          img.onerror = resolve // 에러가 나도 계속 진행
+          img.onerror = resolve
         })
       })
       
       await Promise.all(imagePromises)
       clearInterval(textInterval)
       setImagesLoaded(true)
-      // 이미지 로드 완료 후 페이드 인 시작
       setTimeout(() => setFadeIn(true), 300)
     }
     
@@ -96,8 +96,8 @@ export default function TutorialIntro({ onComplete }) {
 
   const [timeLeft, setTimeLeft] = useState(7)
   const [timerActive, setTimerActive] = useState(false)
-  const [reactionText, setReactionText] = useState('') // 선택 후 속마음 텍스트
-  const [reactionEmoji, setReactionEmoji] = useState('') // 선택 후 이모지
+  const [reactionText, setReactionText] = useState('')
+  const [reactionEmoji, setReactionEmoji] = useState('')
 
   // 타이머 시작 (이름 입력 화면이 보일 때)
   useEffect(() => {
@@ -112,7 +112,6 @@ export default function TutorialIntro({ onComplete }) {
     if (!timerActive || nameSubmitted) return
 
     if (timeLeft <= 0) {
-      // 시간 초과 - "미끄러졌다" 선택
       handleSlipChoice()
       return
     }
@@ -167,7 +166,7 @@ export default function TutorialIntro({ onComplete }) {
     }, 2000)
   }
 
-  // 파티클 데이터 (클라이언트에서만 생성)
+  // 파티클 데이터
   const nameInputParticles = useMemo(() => {
     if (!mounted) return []
     return [...Array(20)].map((_, i) => ({
@@ -193,7 +192,7 @@ export default function TutorialIntro({ onComplete }) {
   // 타이핑 효과
   useEffect(() => {
     if (currentScene < scenes.length && showText) {
-      if (typingRef.current) return // 이미 타이핑 중이면 무시
+      if (typingRef.current) return
       
       typingRef.current = true
       const fullText = scenes[currentScene].text
@@ -279,9 +278,35 @@ export default function TutorialIntro({ onComplete }) {
     }
   }
 
-  // 3D 게임 인트로 씬
+  // 3D 게임 인트로 씬 - ⭐ 프리로드된 GameBoard 재사용
   if (showGameIntro) {
-    return <GameIntroScene onStart={onComplete} />
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: '#0a0510',
+        zIndex: 9999,
+        overflow: 'hidden',
+      }}>
+        {/* 프리로드된 GameBoard를 여기서 보여줌 */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          height: '100%',
+          maxWidth: '900px',
+          maxHeight: '700px',
+          opacity: 0.85,
+        }}>
+          <GameBoard />
+        </div>
+        
+        {/* GameIntroScene은 UI만 담당 */}
+        <GameIntroScene onStart={onComplete} />
+      </div>
+    )
   }
 
   // 로딩 화면
@@ -305,6 +330,17 @@ export default function TutorialIntro({ onComplete }) {
           gap: '2rem',
         }}
       >
+        {/* ⭐ 숨겨진 상태로 3D 보드 미리 렌더링 */}
+        <div style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}>
+          <GameBoard />
+        </div>
+
         {/* 눈송이 애니메이션 */}
         <div style={{
           fontSize: 'clamp(3rem, 10vw, 6rem)',
@@ -383,6 +419,17 @@ export default function TutorialIntro({ onComplete }) {
           justifyContent: 'center',
         }}
       >
+        {/* ⭐ 숨겨진 상태로 3D 보드 계속 유지 */}
+        <div style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}>
+          <GameBoard />
+        </div>
+
         {/* 선택 후 속마음 표시 */}
         {nameSubmitted && reactionText && (
           <div 
@@ -610,6 +657,27 @@ export default function TutorialIntro({ onComplete }) {
             </button>
           </div>
         </div>
+
+        {/* CSS 애니메이션 */}
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes bounce {
+            0% { transform: scale(0) rotate(-10deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+          }
+        `}</style>
       </div>
     )
   }
@@ -617,7 +685,6 @@ export default function TutorialIntro({ onComplete }) {
   // 씬 슬라이드쇼
   const scene = currentScene < scenes.length ? scenes[currentScene] : null
 
-  // 씬이 없으면 (이름 입력 단계 등) 빈 화면 방지
   if (!scene && !showNameInput && !showGameIntro) {
     return null
   }
@@ -640,7 +707,19 @@ export default function TutorialIntro({ onComplete }) {
         transition: 'opacity 0.8s ease-in',
       }}
     >
-      {/* 검정 배경 레이어 - 항상 유지 */}
+      {/* ⭐ 숨겨진 상태로 3D 보드 미리 렌더링 */}
+      <div style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        opacity: 0,
+        pointerEvents: 'none',
+        zIndex: -1,
+      }}>
+        <GameBoard />
+      </div>
+
+      {/* 검정 배경 레이어 */}
       <div 
         style={{
           position: 'absolute',
@@ -650,7 +729,7 @@ export default function TutorialIntro({ onComplete }) {
         }}
       />
       
-      {/* 컨텐츠 레이어 - 페이드 효과 적용 */}
+      {/* 컨텐츠 레이어 */}
       <div
         style={{
           position: 'absolute',
