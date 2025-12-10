@@ -50,9 +50,23 @@ export default function TutorialIntro({ onComplete }) {
   const [showGameIntro, setShowGameIntro] = useState(false) // 3D 인트로 씬 표시 여부
   const typingRef = useRef(false) // 타이핑 중복 방지
   const [imagesLoaded, setImagesLoaded] = useState(false) // 이미지 로드 상태
+  const [loadingText, setLoadingText] = useState('창가에 다가가는 중') // 로딩 텍스트
 
   // 이미지 프리로드
   useEffect(() => {
+    const loadingTexts = [
+      '창가에 다가가는 중',
+      '눈 내리는 밤',
+      '토끼를 찾는 중',
+      '이상한 나라로...'
+    ]
+    
+    let textIndex = 0
+    const textInterval = setInterval(() => {
+      textIndex = (textIndex + 1) % loadingTexts.length
+      setLoadingText(loadingTexts[textIndex])
+    }, 800)
+    
     const preloadImages = async () => {
       const imagePromises = scenes.map(scene => {
         return new Promise((resolve) => {
@@ -64,12 +78,15 @@ export default function TutorialIntro({ onComplete }) {
       })
       
       await Promise.all(imagePromises)
+      clearInterval(textInterval)
       setImagesLoaded(true)
       // 이미지 로드 완료 후 페이드 인 시작
       setTimeout(() => setFadeIn(true), 300)
     }
     
     preloadImages()
+    
+    return () => clearInterval(textInterval)
   }, [])
 
   // 클라이언트 마운트 체크
@@ -265,6 +282,86 @@ export default function TutorialIntro({ onComplete }) {
   // 3D 게임 인트로 씬
   if (showGameIntro) {
     return <GameIntroScene onStart={onComplete} />
+  }
+
+  // 로딩 화면
+  if (!imagesLoaded) {
+    return (
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: '#000',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2rem',
+        }}
+      >
+        {/* 눈송이 애니메이션 */}
+        <div style={{
+          fontSize: 'clamp(3rem, 10vw, 6rem)',
+          animation: 'gentleFloat 3s ease-in-out infinite',
+        }}>
+          ❄️
+        </div>
+
+        {/* 로딩 텍스트 */}
+        <div 
+          className="wonderland-font"
+          style={{
+            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+            color: 'rgba(255,255,255,0.8)',
+            textAlign: 'center',
+            animation: 'fadeInOut 0.8s ease-in-out infinite',
+          }}
+        >
+          {loadingText}...
+        </div>
+
+        {/* 로딩 점 애니메이션 */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+        }}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255,255,255,0.6)',
+                animation: `bounce 1.4s ease-in-out ${i * 0.2}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* CSS 애니메이션 */}
+        <style jsx>{`
+          @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+          }
+          @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+          }
+          @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+          }
+        `}</style>
+      </div>
+    )
   }
 
   // 이름 입력 화면
