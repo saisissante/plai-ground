@@ -148,9 +148,16 @@ const useGameStore = create(
           newRequired[encounter.characterKey] = true
         }
 
+      //  if (currentEncounter && currentEncounter.isFinalBattle && currentEncounter.finalMessage) {
+       // set({
+       //   gamePhase: '현실로 돌아갈 떄다, 앨리스',
+       //   bossMessage: currentEncounter.finalMessage,
+       // })
+       // return
+  //  }
         // 마지막 만남인지 여부는 API에서 내려준 isFinalBattle로 판단
         const isFinalBattle = !!encounter.isFinalBattle
-
+        
         // 체스판에서 한 칸 이동 (가로로 쭉 → 끝나면 다음 줄로)
         const { x, y } = state.currentPosition
         const nextX = x >= 7 ? 0 : x + 1

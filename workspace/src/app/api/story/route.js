@@ -462,7 +462,7 @@ P_ (변화에 대한 자세)
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: `${nextCharacter.name}${allowNewCharacter ? ' (새 캐릭터 생성)' : ''}로서 딜레마 질문을 만들어줘. 질문 수: ${isFinalBattle ? '2개' : '1개'}`
+            content: `${nextCharacter.name}${allowNewCharacter ? ' (새 캐릭터 생성)' : ''}로서 딜레마 질문을 만들어줘. 질문 수: ${isFinalBattle ? '3개' : '2개'}`
           }
         ],
         response_format: { type: 'json_object' },
